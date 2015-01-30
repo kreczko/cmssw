@@ -34,6 +34,7 @@ class CaloSubdetectorTopology;
 class EcalClusterLazyToolsBase {
  public:
   EcalClusterLazyToolsBase( const edm::Event &ev, const edm::EventSetup &es, edm::EDGetTokenT<EcalRecHitCollection> token1, edm::EDGetTokenT<EcalRecHitCollection> token2);
+  EcalClusterLazyToolsBase( const edm::Event &ev, const edm::EventSetup &es, edm::EDGetTokenT<EcalRecHitCollection> token1, edm::EDGetTokenT<EcalRecHitCollection> token2, edm::EDGetTokenT<EcalRecHitCollection> token3);
   ~EcalClusterLazyToolsBase();
   
 
@@ -89,13 +90,24 @@ class EcalClusterLazyToolsBase {
   //  std::vector<int> flagsexcl_;
   //  std::vector<int> severitiesexcl_;
 
+ public:
+  inline const EcalRecHitCollection *getEcalEBRecHitCollection(void){return ebRecHits_;};
+  inline const EcalRecHitCollection *getEcalEERecHitCollection(void){return eeRecHits_;};
+  inline const EcalRecHitCollection *getEcalESRecHitCollection(void){return esRecHits_;};
+  inline const EcalIntercalibConstants& getEcalIntercalibConstants(void){return icalMap;};
+  inline const edm::ESHandle<EcalLaserDbService>& getLaserHandle(void){return laser;};
+  
 }; // class EcalClusterLazyToolsBase
 
 template<class EcalClusterToolsImpl> 
 class EcalClusterLazyToolsT : public EcalClusterLazyToolsBase {
     public:
-        EcalClusterLazyToolsT( const edm::Event &ev, const edm::EventSetup &es, edm::EDGetTokenT<EcalRecHitCollection> token1, edm::EDGetTokenT<EcalRecHitCollection> token2):
-            EcalClusterLazyToolsBase(ev,es,token1,token2) {}
+
+ EcalClusterLazyToolsT( const edm::Event &ev, const edm::EventSetup &es, edm::EDGetTokenT<EcalRecHitCollection> token1, edm::EDGetTokenT<EcalRecHitCollection> token2):
+  EcalClusterLazyToolsBase(ev,es,token1,token2) {}
+
+ EcalClusterLazyToolsT( const edm::Event &ev, const edm::EventSetup &es, edm::EDGetTokenT<EcalRecHitCollection> token1, edm::EDGetTokenT<EcalRecHitCollection> token2, edm::EDGetTokenT<EcalRecHitCollection> token3):
+  EcalClusterLazyToolsBase(ev,es,token1,token2,token3) {}
         ~EcalClusterLazyToolsT() {}
 
         // various energies in the matrix nxn surrounding the maximum energy crystal of the input cluster  

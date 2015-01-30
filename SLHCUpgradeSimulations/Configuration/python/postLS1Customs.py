@@ -3,6 +3,7 @@ import FWCore.ParameterSet.Config as cms
 
 from SLHCUpgradeSimulations.Configuration.muonCustoms import customise_csc_PostLS1,customise_csc_hlt
 from L1Trigger.L1TCommon.customsPostLS1 import customiseSimL1EmulatorForPostLS1
+from SLHCUpgradeSimulations.Configuration.fastSimCustoms import customise_fastSimPostLS1
 
 def customisePostLS1(process):
 
@@ -11,6 +12,9 @@ def customisePostLS1(process):
 
     # deal with L1 Emulation separately:
     customiseSimL1EmulatorForPostLS1(process)
+
+    # deal with FastSim separately:
+    process = customise_fastSimPostLS1(process)
 
     # all the rest:
     if hasattr(process,'g4SimHits'):
@@ -36,11 +40,56 @@ def customisePostLS1(process):
 
     return process
 
+def customiseRun2EraExtras(process):
+    """
+    This function should be used in addition to the "--era run2" cmsDriver
+    option so that it can perform the last few changes that the era hasn't
+    implemented yet.
+    
+    As functionality is added to the run2 era the corresponding line will
+    be removed from this function until the whole function is removed.
+    
+    Currently does exactly the same as "customisePostLS1", since the run2
+    era doesn't make any changes yet (coming in later pull requests).
+    """
+    # deal with CSC separately:
+    process = customise_csc_PostLS1(process)
+
+    # deal with L1 Emulation separately:
+    customiseSimL1EmulatorForPostLS1(process)
+
+    # deal with FastSim separately:
+    process = customise_fastSimPostLS1(process)
+
+    # all the rest:
+    if hasattr(process,'g4SimHits'):
+        process=customise_Sim(process)
+    if hasattr(process,'DigiToRaw'):
+        process=customise_DigiToRaw(process)
+    if hasattr(process,'RawToDigi'):
+        process=customise_RawToDigi(process)
+    if hasattr(process,'reconstruction'):
+        process=customise_Reco(process)
+    if hasattr(process,'digitisation_step'):
+        process=customise_Digi(process)
+    if hasattr(process,'HLTSchedule'):
+        process=customise_HLT(process)
+    if hasattr(process,'L1simulation_step'):
+        process=customise_L1Emulator(process)
+    if hasattr(process,'dqmoffline_step'):
+        process=customise_DQM(process)
+    if hasattr(process,'dqmHarvesting'):
+        process=customise_harvesting(process)
+    if hasattr(process,'validation_step'):
+        process=customise_Validation(process)
+
+    return process
+    
 
 def digiEventContent(process):
     #extend the event content
 
-    alist=['RAWSIM','RAWDEBUG','FEVTDEBUG','FEVTDEBUGHLT','GENRAW','RAWSIMHLT','FEVT']
+    alist=['RAWSIM','RAWDEBUG','FEVTDEBUG','FEVTDEBUGHLT','GENRAW','RAWSIMHLT','FEVT','PREMIX','PREMIXRAW']
     for a in alist:
         b=a+'output'
         if hasattr(process,b):
@@ -68,7 +117,7 @@ def customise_Validation(process):
 
 def customise_Sim(process):
     # enable 2015 HF shower library
-    process.g4SimHits.HFShowerLibrary.FileName  = 'SimG4CMS/Calo/data/HFShowerLibrary_npmt_noatt_eta4_16en.root'
+    process.g4SimHits.HFShowerLibrary.FileName = 'SimG4CMS/Calo/data/HFShowerLibrary_npmt_noatt_eta4_16en_v3.root'
     return process
 
 
@@ -366,6 +415,20 @@ def customise_Reco(process):
                 flags              = cms.vstring('Standard')
             )
         )
+
+    #Lower Thresholds also for Clusters!!!    
+
+    for p in process.particleFlowClusterHO.seedFinder.thresholdsByDetector:
+        p.seedingThreshold = cms.double(0.08)
+
+    for p in process.particleFlowClusterHO.initialClusteringStep.thresholdsByDetector:
+        p.gatheringThreshold = cms.double(0.05)
+
+    for p in process.particleFlowClusterHO.pfClusterBuilder.recHitEnergyNorms:
+        p.recHitEnergyNorm = cms.double(0.05)
+
+    process.particleFlowClusterHO.pfClusterBuilder.positionCalc.logWeightDenominator = cms.double(0.05)
+    process.particleFlowClusterHO.pfClusterBuilder.allCellsPositionCalc.logWeightDenominator = cms.double(0.05)
 
     return process
 

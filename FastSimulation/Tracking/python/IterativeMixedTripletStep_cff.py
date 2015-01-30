@@ -6,42 +6,33 @@ import FWCore.ParameterSet.Config as cms
 #from FastSimulation.Tracking.IterativeMixedTripletStepSeedProducer_cff import *
 import FastSimulation.Tracking.TrajectorySeedProducer_cfi
 iterativeMixedTripletStepSeeds = FastSimulation.Tracking.TrajectorySeedProducer_cfi.trajectorySeedProducer.clone()
-iterativeMixedTripletStepSeeds.firstHitSubDetectorNumber = [2]
-##iterativeMixedTripletStepSeeds.firstHitSubDetectors = [1, 2, 6]
-iterativeMixedTripletStepSeeds.firstHitSubDetectors = [1, 2]
-iterativeMixedTripletStepSeeds.secondHitSubDetectorNumber = [3]
-iterativeMixedTripletStepSeeds.secondHitSubDetectors = [1, 2, 6]
-iterativeMixedTripletStepSeeds.thirdHitSubDetectorNumber = [0]
-iterativeMixedTripletStepSeeds.thirdHitSubDetectors = []
-iterativeMixedTripletStepSeeds.seedingAlgo = ['MixedTriplets']
-iterativeMixedTripletStepSeeds.minRecHits = [3]
-iterativeMixedTripletStepSeeds.pTMin = [0.15]
-iterativeMixedTripletStepSeeds.maxD0 = [10.]
-iterativeMixedTripletStepSeeds.maxZ0 = [30.]
-iterativeMixedTripletStepSeeds.numberOfHits = [2]
-iterativeMixedTripletStepSeeds.originRadius = [2.0] # was 1.2
-iterativeMixedTripletStepSeeds.originHalfLength = [10.0] # was 7.0
-iterativeMixedTripletStepSeeds.originpTMin = [0.35] # we need to add another seed for endcaps only, with 0.5
-iterativeMixedTripletStepSeeds.zVertexConstraint = [-1.0]
-iterativeMixedTripletStepSeeds.primaryVertices = ['none']
+iterativeMixedTripletStepSeeds.skipSimTrackIdTags = [cms.InputTag("initialStepIds"), cms.InputTag("lowPtTripletStepIds"), cms.InputTag("pixelPairStepIds"), cms.InputTag("detachedTripletStepIds")]
+iterativeMixedTripletStepSeeds.outputSeedCollectionName = 'MixedTriplets'
+iterativeMixedTripletStepSeeds.minRecHits = 3
+iterativeMixedTripletStepSeeds.pTMin = 0.15
+iterativeMixedTripletStepSeeds.maxD0 = 10.
+iterativeMixedTripletStepSeeds.maxZ0 = 30.
+iterativeMixedTripletStepSeeds.numberOfHits = 3
+iterativeMixedTripletStepSeeds.originRadius = 2.0 # was 1.2
+iterativeMixedTripletStepSeeds.originHalfLength = 10.0 # was 7.0
+iterativeMixedTripletStepSeeds.originpTMin = 0.35 # we need to add another seed for endcaps only, with 0.5
+iterativeMixedTripletStepSeeds.zVertexConstraint = -1.0
+iterativeMixedTripletStepSeeds.primaryVertex = 'none'
 
-iterativeMixedTripletStepSeeds.newSyntax = True
 #iterativeMixedTripletStepSeeds.layerList = ['BPix1+BPix2+BPix3',
 #                                            'BPix1+BPix2+FPix1_pos',
 #                                            'BPix1+BPix2+FPix1_neg',
 #                                            'BPix1+FPix1_pos+FPix2_pos',
 #                                            'BPix1+FPix1_neg+FPix2_neg']
-from RecoTracker.IterativeTracking.MixedTripletStep_cff import mixedTripletStepSeedLayersA
-iterativeMixedTripletStepSeeds.layerList = mixedTripletStepSeedLayersA.layerList
-# NOTE: what about mixedTripletStepSeedLayersB ? Have to think a way to include that as well.
+from RecoTracker.IterativeTracking.MixedTripletStep_cff import mixedTripletStepSeedLayersA,mixedTripletStepSeedLayersB
+# combine both (A&B); Note: in FullSim, different cuts are applied for A & B seeds; in FastSim cuts are tuned (no need to corresponded to FullSim values)
+iterativeMixedTripletStepSeeds.layerList = mixedTripletStepSeedLayersA.layerList+mixedTripletStepSeedLayersB.layerList
 
 # candidate producer
 #from FastSimulation.Tracking.IterativeThirdCandidateProducer_cff import *
 import FastSimulation.Tracking.TrackCandidateProducer_cfi
 iterativeMixedTripletStepCandidates = FastSimulation.Tracking.TrackCandidateProducer_cfi.trackCandidateProducer.clone()
 iterativeMixedTripletStepCandidates.SeedProducer = cms.InputTag("iterativeMixedTripletStepSeeds","MixedTriplets")
-iterativeMixedTripletStepCandidates.TrackProducers = ['pixelPairStepTracks', 'detachedTripletStepTracks']
-iterativeMixedTripletStepCandidates.KeepFittedTracks = False
 iterativeMixedTripletStepCandidates.MinNumberOfCrossedLayers = 3
 
 
@@ -54,25 +45,19 @@ iterativeMixedTripletStepTracks.TTRHBuilder = 'WithoutRefit'
 ##iterativeMixedTripletStepTracks.Fitter = 'KFFittingSmootherWithOutlierRejection'
 iterativeMixedTripletStepTracks.Fitter = 'KFFittingSmootherThird'
 iterativeMixedTripletStepTracks.Propagator = 'PropagatorWithMaterial'
+iterativeMixedTripletStepTracks.trackAlgo = cms.untracked.uint32(8)
 
-# track merger
-#from FastSimulation.Tracking.IterativeMixedTripletStepMerger_cfi import *
-mixedTripletStepTracks = cms.EDProducer("FastTrackMerger",
-                                        TrackProducers = cms.VInputTag(cms.InputTag("iterativeMixedTripletStepCandidates"),
-                                                                       cms.InputTag("iterativeMixedTripletStepTracks")),
-                                        RemoveTrackProducers =  cms.untracked.VInputTag(cms.InputTag("initialStepTracks"),
-                                                                                        cms.InputTag("lowPtTripletStepTracks"),   
-                                                                                        cms.InputTag("pixelPairStepTracks"),   
-                                                                                        cms.InputTag("detachedTripletStepTracks")),    
-                                        trackAlgo = cms.untracked.uint32(8),
-                                        MinNumberOfTrajHits = cms.untracked.uint32(4), # ?
-                                        MaxLostTrajHits = cms.untracked.uint32(0)                                          
-                                        )
+# simtrack id producer
+mixedTripletStepIds = cms.EDProducer("SimTrackIdProducer",
+                                  trackCollection = cms.InputTag("iterativeMixedTripletStepTracks"),
+                                  HitProducer = cms.InputTag("siTrackerGaussianSmearingRecHits","TrackerGSMatchedRecHits")
+                                  )
+
 
 # TRACK SELECTION AND QUALITY FLAG SETTING.
 import RecoTracker.FinalTrackSelectors.multiTrackSelector_cfi
 mixedTripletStepSelector = RecoTracker.FinalTrackSelectors.multiTrackSelector_cfi.multiTrackSelector.clone(
-        src='mixedTripletStepTracks',
+        src='iterativeMixedTripletStepTracks',
             trackSelectors= cms.VPSet(
             RecoTracker.FinalTrackSelectors.multiTrackSelector_cfi.looseMTS.clone(
                 name = 'mixedTripletStepVtxLoose',
@@ -155,8 +140,8 @@ mixedTripletStepSelector = RecoTracker.FinalTrackSelectors.multiTrackSelector_cf
 
 import RecoTracker.FinalTrackSelectors.trackListMerger_cfi
 mixedTripletStep = RecoTracker.FinalTrackSelectors.trackListMerger_cfi.trackListMerger.clone(
-    TrackProducers = cms.VInputTag(cms.InputTag('mixedTripletStepTracks'),
-                                   cms.InputTag('mixedTripletStepTracks')),
+    TrackProducers = cms.VInputTag(cms.InputTag('iterativeMixedTripletStepTracks'),
+                                   cms.InputTag('iterativeMixedTripletStepTracks')),
     hasSelector=cms.vint32(1,1),
     selectedTrackQuals = cms.VInputTag(cms.InputTag("mixedTripletStepSelector","mixedTripletStepVtx"),
                                        cms.InputTag("mixedTripletStepSelector","mixedTripletStepTrk")),
@@ -168,7 +153,7 @@ mixedTripletStep = RecoTracker.FinalTrackSelectors.trackListMerger_cfi.trackList
 iterativeMixedTripletStep = cms.Sequence(iterativeMixedTripletStepSeeds+
                                          iterativeMixedTripletStepCandidates+
                                          iterativeMixedTripletStepTracks+
-                                         mixedTripletStepTracks+
+                                         mixedTripletStepIds+
                                          mixedTripletStepSelector+
                                          mixedTripletStep)
 
