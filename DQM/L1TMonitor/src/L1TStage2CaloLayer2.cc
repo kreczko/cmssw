@@ -69,7 +69,7 @@ void L1TStage2CaloLayer2::bookHistograms(DQMStore::IBooker &ibooker, edm::Run co
   stage2CaloLayer2EtSumBxOcc_ = ibooker.book2D("EtSumBxOcc", "EtSum BX OCCUPANCY",  5,-2.5, 2.5, 1024, -0.5, 4095.5);
   stage2CaloLayer2METRank_ = ibooker.book1D("METRank", "MET E_{T}", 4096, -0.5, 4095.5);
   stage2CaloLayer2METPhi_ = ibooker.book1D("METPhi", "MET Phi", 144, -0.5, 143.5);
-  stage2CaloLayer2ETTRank_ = ibooker.book1D("ETTPhi", "ETT E_{T}", 4096, -0.5, 4095.5);
+  stage2CaloLayer2ETTRank_ = ibooker.book1D("ETTRank", "ETT E_{T}", 4096, -0.5, 4095.5);
   stage2CaloLayer2ETTPhi_ = ibooker.book1D("ETTPhi","ETT Phi", 144, -0.5, 143.5);
   stage2CaloLayer2MHTRank_ = ibooker.book1D("MHTRank", "MHT E_{T}", 4096, -0.5, 4095.5);
   stage2CaloLayer2MHTPhi_ = ibooker.book1D("MHTPhi", "MHT Phi", 144, -0.5, 143.5);
