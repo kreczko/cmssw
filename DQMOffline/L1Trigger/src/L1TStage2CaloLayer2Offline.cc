@@ -71,12 +71,13 @@ void L1TStage2CaloLayer2Offline::dqmBeginRun(edm::Run const &, edm::EventSetup c
 //
 // -------------------------------------- bookHistos --------------------------------------------
 //
-void L1TStage2CaloLayer2Offline::bookHistograms(DQMStore::IBooker & ibooker_, edm::Run const &, edm::EventSetup const &)
+void L1TStage2CaloLayer2Offline::bookHistograms(DQMStore::IBooker & ibooker, edm::Run const &, edm::EventSetup const &)
 {
   edm::LogInfo("L1TStage2CaloLayer2Offline") << "L1TStage2CaloLayer2Offline::bookHistograms" << std::endl;
 
   //book at beginRun
-  bookHistos(ibooker_);
+  bookEnergySumHistos(ibooker);
+  bookJetHistos(ibooker);
 }
 //
 // -------------------------------------- beginLuminosityBlock --------------------------------------------
@@ -399,15 +400,6 @@ void L1TStage2CaloLayer2Offline::endRun(edm::Run const& run, edm::EventSetup con
   edm::LogInfo("L1TStage2CaloLayer2Offline") << "L1TStage2CaloLayer2Offline::endRun" << std::endl;
 }
 
-//
-// -------------------------------------- book histograms --------------------------------------------
-//
-void L1TStage2CaloLayer2Offline::bookHistos(DQMStore::IBooker & ibooker)
-{
-  bookEnergySumHistos(ibooker);
-  bookJetHistos(ibooker);
-}
-
 void L1TStage2CaloLayer2Offline::bookEnergySumHistos(DQMStore::IBooker & ibooker)
 {
   ibooker.cd();
@@ -505,13 +497,13 @@ void L1TStage2CaloLayer2Offline::bookJetHistos(DQMStore::IBooker & ibooker)
       "L1 Jet E_{T} vs Offline Jet E_{T} (HB+HE); Offline Jet E_{T} (GeV); L1 Jet E_{T} (GeV)", 300, 0, 300, 300, 0,
       300);
 
-  h_L1JetPhivsCaloJetPhi_HB_ = ibooker.book2D("L1JetETvsCaloJetET_HB",
+  h_L1JetPhivsCaloJetPhi_HB_ = ibooker.book2D("L1JetPhivsCaloJetPhi_HB",
       "#phi_{jet}^{L1} vs #phi_{jet}^{offline} (HB); #phi_{jet}^{offline}; #phi_{jet}^{L1}", 100, -4, 4, 100, -4, 4);
-  h_L1JetPhivsCaloJetPhi_HE_ = ibooker.book2D("L1JetETvsCaloJetET_HE",
+  h_L1JetPhivsCaloJetPhi_HE_ = ibooker.book2D("L1JetPhivsCaloJetPhi_HE",
       "#phi_{jet}^{L1} vs #phi_{jet}^{offline} (HE); #phi_{jet}^{offline}; #phi_{jet}^{L1}", 100, -4, 4, 100, -4, 4);
-  h_L1JetPhivsCaloJetPhi_HF_ = ibooker.book2D("L1JetETvsCaloJetET_HF",
+  h_L1JetPhivsCaloJetPhi_HF_ = ibooker.book2D("L1JetPhivsCaloJetPhi_HF",
       "#phi_{jet}^{L1} vs #phi_{jet}^{offline} (HF); #phi_{jet}^{offline}; #phi_{jet}^{L1}", 100, -4, 4, 100, -4, 4);
-  h_L1JetPhivsCaloJetPhi_HB_HE_ = ibooker.book2D("L1JetETvsCaloJetET_HB_HE",
+  h_L1JetPhivsCaloJetPhi_HB_HE_ = ibooker.book2D("L1JetPhivsCaloJetPhi_HB_HE",
       "#phi_{jet}^{L1} vs #phi_{jet}^{offline} (HB+HE); #phi_{jet}^{offline}; #phi_{jet}^{L1}", 100, -4, 4, 100, -4, 4);
 
   h_L1JetEtavsCaloJetEta_ = ibooker.book2D("L1JetEtavsCaloJetEta_HB",
@@ -573,31 +565,6 @@ void L1TStage2CaloLayer2Offline::bookJetHistos(DQMStore::IBooker & ibooker)
   }
 
   ibooker.cd();
-}
-
-//
-// -------------------------------------- functions --------------------------------------------
-//
-double L1TStage2CaloLayer2Offline::Distance(const reco::Candidate & c1, const reco::Candidate & c2)
-{
-  return deltaR(c1, c2);
-}
-
-double L1TStage2CaloLayer2Offline::DistancePhi(const reco::Candidate & c1, const reco::Candidate & c2)
-{
-  return deltaPhi(c1.p4().phi(), c2.p4().phi());
-}
-
-// This always returns only a positive deltaPhi
-double L1TStage2CaloLayer2Offline::calcDeltaPhi(double phi1, double phi2)
-{
-  double deltaPhi = phi1 - phi2;
-  if (deltaPhi < 0)
-    deltaPhi = -deltaPhi;
-  if (deltaPhi > 3.1415926) {
-    deltaPhi = 2 * 3.1415926 - deltaPhi;
-  }
-  return deltaPhi;
 }
 
 //define this as a plug-in
